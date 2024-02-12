@@ -26,6 +26,7 @@ export interface SaveTileOptions extends ControlOptions {
   confirm: Function | null;
   confirmRemoval: Function | null;
   parallel: number;
+  backoffDelay: number;
   zoomlevels: number[] | undefined;
   alwaysDownload: boolean;
 }
@@ -151,6 +152,11 @@ export class ControlSaveTiles extends Control {
         return loader();
       };
       const parallel = Math.min(tiles.length, this.options.parallel);
+      if (tiles.length > this.options.parallel) {
+        setTimeout(() => {
+            console.log("Backoff delay completed.");
+        }, this.options.backoffDelay);
+      }
       for (let i = 0; i < parallel; i += 1) {
         loader();
       }
@@ -215,6 +221,8 @@ export class ControlSaveTiles extends Control {
     ) {
       blob = await downloadTile(tile.url);
       this.status.lengthLoaded += 1;
+    } else {
+      console.log(`Tile Failed for ${tile.key}`);
     }
     this.status.lengthLoaded += 1;
 
